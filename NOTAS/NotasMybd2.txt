@@ -1,0 +1,1479 @@
+
+
+
+
+LISTAR em EXPO
+
+1-INSTALAÇÃO E CONFIGURAR
+A1-  INSTALAR NODE JS ---https://nodejs.org
+A2- INSTALAR EXPO ----
+# npm install expo-cli --global
+CONFIRMA
+# npm install expo
+2-CRIAR APLICATIVO 
+# expo init meuApp
+---Deixae na opção 'Blank'
+B1- ABRIR PASTA DO PROJETO NO VISUAL CODE
+B2- RODAR o APP
+# expo start   OU
+# npm star ---USEI ESSE
+
+
+3---TELA App.js (INICIAL)
+
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Text>Open Amo MEU Nosso Deus
+         app!</Text>
+      <StatusBar style="auto" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+
+4--INSTALAR DEPENDENCIAS
+# npm install --save bootstrap 
+# npm install react-bootstrap bootstrap@5.1.3
+# npm install --save reactstrap react react-dom
+# npm i react-icons
+# npm i axios
+# npm install react-native-datepicker --save
+# npm install react-native-vector-icons
+# npm install react-native-animatable --save
+
+5---CRIAR UM BANCO DE DADOS (Criei o Banco de Dados (charset=utf-8, general-ci)no wamp64 
+BD(atena) ---com uma tabela chamada usuarios com 4 campos )
+
+6-- -CRIAR UMA PASTA EM www DO WAMP64 CHAMADA apireact e CODOFICAR API FAZENDO
+UM ARQUIVO D CONEXÃO EM PHP COM O BANCO (ARQUIVO PHP -- conexao.php) --
+ISSO NO WAMP NÃO ESQUECER
+
+---CRIAR UM ARQUIVO DE CONEXÃO (conexao.php) DENTRO DE Apireact (use o sublime3)
+<?php 
+
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Request-With');
+header('Content-Type: application/json; charset=utf-8');
+
+$banco = 'atena';
+$host = 'localhost';
+$usuario = 'carlos';
+$senha = 'casb';
+
+// tratamento de ERRo
+try {
+	
+	$pdo = new PDO ("mysql:dbname=$banco;host=$host", "$usuario", "$senha" );
+}catch (Exception $e){
+	
+	echo 'Erro ao conectar Banco !!'. $e;
+}
+?>
+
+7-----TESTA CONEXÃO --localhost/apireact NO BROWSER MESMO
+
+
+8-----INTEGRAR API (apireact) DO WAMP64 COM NOSSO PROJETO
+VAMOS NA TELA App.js e CODIFICAMOS. 
+App.js FICA ASSIM:
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+
+
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css'
+import {FaPen} from 'react-icons/fa'
+
+
+ function App() {
+
+    // OS States NOS PERMITE MANIPULAR OS DADOS
+   //CRIAR UM STATE PARA LISTA GERAL
+   const [lista, setLista ] = useState([]);
+   //CRIAR UM STATE PARA USUARIOS que vai ser um nome (string) e não uma lista
+   const [nome, setNome ] = useState('');
+
+  //CRIAR UM STATE PARA EMAIL que vai ser um email (string) e não uma lista
+  const [email, setEmail ] = useState('');
+  //CRIAR UM STATE PARA SENHA que vai ser um senha (string) e não uma lista
+  const [senha, setSenha ] = useState('');
+  ///CRIAR O STATE ID PARA NO CASO PODER PASSAR  DE EDITAR OU DELETAR
+  const [id, setId ] = useState('');
+
+
+  //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
+  useEffect( ()=> {
+
+ //CRIAR METODO PARA LISTAR
+ listarDados ()
+    
+ }, [])
+ 
+//VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
+
+async function listarDados (){
+  /* CRIAR UMA CONSTATNTE CHAMADA res 
+  QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
+*/
+const res = await axios.get('http://localhost/apireact/listar.php')
+//Depois que veio o resulatdo passa os dados para o setLista
+setLista(res.data.result);
+//Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+console.log(res.data.result)
+}
+return (
+  <div>
+    Teste
+  </div>
+
+)
+}
+export default App;
+
+OBSERVAÇÂO ---- AINDA NÃO TEMOS O ARQUIVO listar.php LA NA API (apireact) NO WAMP64
+
+
+9---VAMOS CRIAR O ARQUIVO listar.php LA NA API (apireact) NO WAMP64
+<?php
+
+//INCLUIR CONECÃO
+include_once('conexao.php');
+
+//FAZER A CONSULTA
+
+// $query= $pdo->query("SELECT * from usuarios order by id desc limit $postjson[start], $postjson[limit] ");
+
+$query= $pdo->query("SELECT * from usuarios order by id desc  ");
+
+
+ // PASSAR OS DADOS RECEBIDOS NA CONSULTA PARA UMA ARRAY
+
+ $res = $query->fetchALL(PDO::FETCH_ASSOC);
+
+ for ($i=0; $i < count($res); $i++) {
+ 	foreach ($res[$i] as $key => $value) {
+ 		// code...
+ 	}
+
+
+// ESSE DADOS VAI SER REPASSADOS PARA A APLICAÇÃO
+ 	$dados[] = array (
+
+ 		'id' => $res[$i]['id'],
+ 		'nome' => $res[$i]['nome'],
+ 		'email' => $res[$i]['email'],
+ 		'senha' => $res[$i]['senha'],
+ 	
+ 	);
+ }
+
+ //CRIAR CONDIÇÃO SE ENCONTRA ALGUM REGISTRO (maior que 0) PASSA OS DADOS ($dados) AO CONTRARIO PASSA ZERO (0)
+
+ if (count($res) > 0 ){
+
+ 	$result = json_encode(array('sucess' => true, 'result'=> $dados));
+ }else{
+ 	$result = json_encode(array('sucess' => false, 'result'=> 0));
+
+ }
+
+ echo $result;
+
+ 
+
+?>
+---BOM TESTAR O listar.php (localhost/apireact)
+
+
+10-----ESTAVA DANDO UM IMPOSSIBILIDADE - rejeition
+COLOCOMAOS UM TRY CACTH NA LISTAR DADOS EM App.js E FIZEMOS UMA LISTAGEM COM View
+A PASTA App.js FICOU ASSIM  (Só dando certo no browser e sem bootstrap)
+import { StatusBar } from 'expo-status-bar';
+import React, {  useEffect, useState } from 'react';
+import { StyleSheet, Text, View, FlatList, SafeAreaView, Button , Image, TouchableOpacity} from 'react-native';
+import {FaCheckCircle, FaTrash, FaPen } from 'react-icons/fa'; // npm i react-icons
+
+import axios from 'axios';
+import css from './src/Css/css';
+
+
+// //import 'bootstrap/dist/css/bootstrap.min.css'
+
+import { ListGroupItemHeading } from 'reactstrap';
+import * as Animatable from 'react-native-animatable';
+import {Ionicons} from '@expo/vector-icons';
+
+
+import trevo from './src/images/trevo.png'
+import editar from './src/images/editar.png'
+import excluir from './src/images/excluir.png'
+
+
+ function App() {
+  //CRIAR UM STATE PARA LISTA GERAL
+  const [lista, setLista ] = useState([]);
+  //CRIAR UM STATE PARA USUARIOS que vai ser um nome (string) e não uma lista
+  const [nome, setNome ] = useState('');
+ //CRIAR UM STATE PARA EMAIL que vai ser um email (string) e não uma lista
+ const [email, setEmail ] = useState('');
+ //CRIAR UM STATE PARA SENHA que vai ser um senha (string) e não uma lista
+ const [senha, setSenha ] = useState('');
+ ///CRIAR O STATE ID PARA NO CASO PODER PASSAR  DE EDITAR OU DELETAR
+ const [id, setId ] = useState('');
+
+ //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
+useEffect( ()=> {
+
+  //CRIAR METODO PARA LISTAR
+  listarDados ()
+     
+   }, [])
+  
+ //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
+
+
+ 
+ async function listarDados (){
+   try {
+  /* CRIAR UMA CONSTATNTE CHAMADA res 
+   QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
+ */
+ const res = await axios.get('http://localhost/apireact/listar.php')
+ //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
+ setLista(res.data.result);
+//// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+ console.log(res.data.result)
+} catch (error) {
+  // Tratar o erro adequadamente
+}
+ }
+return (
+  <SafeAreaView style={css.container}>
+     <TouchableOpacity style={css.CustonButton}> <FaPen /></TouchableOpacity>
+   
+  <Text>lista</Text>
+  
+   {lista.map(item => (
+     
+   <View style={css.item} key={item.id}>
+      <Text style={css.text} >{item.id} -- {item.nome} </Text>
+    
+       <Button style={css.buttonImageIconStyle}
+         title="Del"
+         onPress={{}}
+       />
+       <Button 
+         title="Edi"
+         onPress={{}}
+       />
+
+       <Image
+         style={{ width: 26, height: 26, backgroundColor: '#fff' }}
+         source={require('./src/images/trevo.png')}
+       />
+
+       <TouchableOpacity
+         onPress={{}}
+       >
+         <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/trevo.png')} />
+       </TouchableOpacity>
+
+       <TouchableOpacity >
+         <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/editar.png')} />
+       </TouchableOpacity>
+
+       <TouchableOpacity >
+         <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/excluir.png')} />
+       </TouchableOpacity>
+      </View>
+   ))}       
+ 
+  </SafeAreaView>
+
+);
+
+}
+export default App;
+
+11---ABRIR MODAL ---------PULE PARA O ITEM !2
+import { StatusBar } from 'expo-status-bar';
+import React, {  useEffect, useState } from 'react';
+import { 
+  StyleSheet, Text, View, FlatList,
+  SafeAreaView, Button, Image, TouchableOpacity,
+  TextInput, Modal, Alert
+  } from 'react-native';
+import {FaCheckCircle, FaTrash, FaPen } from 'react-icons/fa'; // npm i react-icons
+
+import axios from 'axios';
+import css from './src/Css/css';
+import {} from 'react-dom'
+
+ //import 'bootstrap/dist/css/bootstrap.min.css'
+
+import { ListGroupItemHeading } from 'reactstrap';
+import * as Animatable from 'react-native-animatable';
+import {Ionicons} from '@expo/vector-icons';
+
+
+import trevo from './src/images/trevo.png'
+import editar from './src/images/editar.png'
+import excluir from './src/images/excluir.png'
+
+
+ function App() {
+
+  //CRIAR UM STATE PARA LISTA GERAL
+  const [lista, setLista ] = useState([]);
+  //CRIAR UM STATE PARA USUARIOS que vai ser um nome (string) e não uma lista
+  const [nome, setNome ] = useState('');
+ //CRIAR UM STATE PARA EMAIL que vai ser um email (string) e não uma lista
+ const [email, setEmail ] = useState('');
+ //CRIAR UM STATE PARA SENHA que vai ser um senha (string) e não uma lista
+ const [senha, setSenha ] = useState('');
+ ///CRIAR O STATE ID PARA NO CASO PODER PASSAR  DE EDITAR OU DELETAR
+ const [id, setId ] = useState('');
+ ///CRIAR O STATE PARA ABRIR MODAL
+ const [abrir, setAbrir ] = useState('false');
+ //CRIARCONSTANTE DE ENDEREÇO 
+ //const api = 'http://localhost/apireact/';
+
+
+ //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
+useEffect( ()=> {
+
+  //CRIAR METODO PARA LISTAR
+  listarDados ()
+     
+   }, [])
+  
+ //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
+ async function listarDados (){
+ //  try {
+  /* CRIAR UMA CONSTATNTE CHAMADA res 
+   QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
+ */
+ const res = await axios.get('http://localhost/apireact/listar.php')
+ //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
+ setLista(res.data.result);
+//// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+ console.log(res.data.result)
+//} catch (error) {
+  // Tratar o erro adequadamente
+//}
+ }
+
+ async function add(){
+  const obj = {nome, email, senha};
+  const res = await axios.post('http://localhost/apireact/listar.php', obj)
+  listarDados();
+  console.log(res.data.sucess)
+ }
+
+ function limparCampos(){
+  setNome('');
+  setEmail('');
+  setSenha('');
+
+}
+
+return (
+  <SafeAreaView style={css.container}>
+   <TouchableOpacity style={css.CustonButton}
+   onPress={()=>setAbrir(true)}
+   > <FaPen /></TouchableOpacity>
+   <Text>LISTA</Text>
+  
+   {lista.map(item => (
+     
+   <View style={css.item} key={item.id}>
+      <Text style={css.text} >{item.id} -- {item.nome} </Text>
+    
+       <Button style={css.buttonImageIconStyle}
+         title="Del"
+         onPress={{}}
+       />
+       <Button 
+         title="Edi"
+         onPress={{}}
+       />
+
+       <Image
+         style={{ width: 26, height: 26, backgroundColor: '#fff' }}
+         source={require('./src/images/trevo.png')}
+       />
+
+       <TouchableOpacity
+         onPress={{}}
+       >
+         <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/trevo.png')} />
+       </TouchableOpacity>
+
+       <TouchableOpacity >
+         <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/editar.png')} />
+       </TouchableOpacity>
+
+       <TouchableOpacity >
+         <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/excluir.png')} />
+       </TouchableOpacity>
+      
+       <Modal           // ABRIR MODAL ACREDITO QUE PODERIA SER COMPONENTE...E NÂO SAI SE O LOCAL È APROPRIADO
+      animationType="slide"
+      transparent={false}
+      visible={abrir}
+      >
+        <SafeAreaView style={css.modal}>
+
+          
+
+          <View style={css.modalHeader}>
+          <TouchableOpacity
+          onPress={ () => setAbrir(false)}
+          >
+         <Ionicons style={{marginLeft:5, marginRight:5}} name="md-arrow-back" size={35} color="#FFF"></Ionicons>
+          </TouchableOpacity>
+        <Text style={css.textoModal}>Inserir Usuário</Text>
+        </View>
+
+        <Animatable.View  
+          animation="bounceInUp"
+        useNativeDriver  >
+
+
+        <TextInput 
+        type="text"
+      style={css.input}
+      placeholder="Insira um Nome"
+      value={nome}
+      onChangeText={ (nome) => setNome(nome)}
+      />
+
+      <TextInput 
+      style={css.input}
+      placeholder="Insira seu Email"
+      value={email}
+      onChangeText={ (email) => setEmail(email)}
+      />
+
+      <TextInput 
+      style={css.input}
+      placeholder="Insira sua Senha"
+      value={senha}
+      onChangeText={ (senha) => setSenha(senha)}
+      />
+
+      
+      <TouchableOpacity  
+      style={css.botaoModal}
+      onPress={add}
+     
+      >
+         <Text  style={css.textoBotaoModal}>Salvar</Text>
+      </TouchableOpacity>
+       
+
+        </Animatable.View>
+
+        </SafeAreaView>
+ 
+      </Modal>
+
+      </View>
+
+      
+   ))}   
+
+
+  </SafeAreaView>
+
+
+
+
+);
+
+
+
+}
+export default App;
+ 
+12 ---REFIZ A API add la no BD Mysql (sublime3) COLOCANDO O CABEÇALHO
+
+<?php 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Request-With');
+header('Content-Type: application/json; charset=utf-8');
+
+
+include_once('conexao.php');
+
+$postjson = json_decode(file_get_contents("php://input"), true);
+
+/* 
+ $query_buscar = $pdo->query("SELECT * from usuarios where email = '$postjson[email]' ");
+ $dados_buscar = $query_buscar->fetchAll(PDO::FETCH_ASSOC);
+ if(@count($dados_buscar) > 0){
+ 	 $result = json_encode(array('success'=>'Email já Cadastrado!'));
+ 	 echo $result;
+ 	 exit();
+ }else{*/
+ 	$query = $pdo->prepare("INSERT INTO usuarios SET nome = :nome, email = :email, senha = :senha ");
+  
+       $query->bindValue(":nome", $postjson['nome']);
+       $query->bindValue(":email", $postjson['email']);
+       $query->bindValue(":senha", $postjson['senha']);
+
+      
+       $query->execute();
+  
+             
+  
+      if($query){
+        $result = json_encode(array('success'=>true));
+  
+        }else{
+        $result = json_encode(array('success'=>false));
+    
+        }
+
+        echo $result;
+ //}
+
+
+13- ----- REFIZ A TELA App.js
+
+import { StatusBar } from 'expo-status-bar';
+import React, {  useEffect, useState } from 'react';
+import { 
+  StyleSheet, Text, View, FlatList,
+  SafeAreaView, Button, Image, TouchableOpacity,
+  TextInput, Modal, Alert, ScrollView
+  } from 'react-native';
+import {FaCheckCircle, FaTrash, FaPen } from 'react-icons/fa'; // npm i react-icons
+
+import axios from 'axios';
+import css from './src/Css/css';
+import {} from 'react-dom'
+
+ //import 'bootstrap/dist/css/bootstrap.min.css'
+
+import { ListGroupItemHeading } from 'reactstrap';
+import * as Animatable from 'react-native-animatable';
+import {Ionicons} from '@expo/vector-icons';
+
+
+import trevo from './src/images/trevo.png'
+import editar from './src/images/editar.png'
+import excluir from './src/images/excluir.png'
+
+
+ function App() {
+
+  //CRIAR UM STATE PARA LISTA GERAL
+  const [lista, setLista ] = useState([]);
+  //CRIAR UM STATE PARA USUARIOS que vai ser um nome (string) e não uma lista
+  const [nome, setNome ] = useState('');
+ //CRIAR UM STATE PARA EMAIL que vai ser um email (string) e não uma lista
+ const [email, setEmail ] = useState('');
+ //CRIAR UM STATE PARA SENHA que vai ser um senha (string) e não uma lista
+ const [senha, setSenha ] = useState('');
+ ///CRIAR O STATE ID PARA NO CASO PODER PASSAR  DE EDITAR OU DELETAR
+ const [id, setId ] = useState('');
+ ///CRIAR O STATE PARA ABRIR MODAL
+ const [abrir, setAbrir ] = useState('false');
+ //CRIARCONSTANTE DE ENDEREÇO 
+ //const api = 'http://localhost/apireact/';
+
+
+ //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
+useEffect( ()=> {
+
+  //CRIAR METODO PARA LISTAR
+  listarDados ()
+     
+   }, [])
+  
+ //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
+ async function listarDados (){
+ //  try {
+  /* CRIAR UMA CONSTATNTE CHAMADA res 
+   QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
+ */
+ const res = await axios.get('http://localhost/apireact/listar.php')
+ //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
+ setLista(res.data.result);
+//// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+ console.log(res.data.result)
+//} catch (error) {
+  // Tratar o erro adequadamente
+//}
+ }
+
+ async function add(){
+  const obj = {nome, email, senha};
+  const res = await axios.post('http://localhost/apireact/add.php', obj)
+  listarDados();
+  console.log(res.data.sucess)
+ 
+ }
+
+ function limparCampos(){
+  setNome('');
+  setEmail('');
+  setSenha('');
+
+}
+
+return (
+
+  <View>
+  <View style={css.navbar}>
+    <Text style={css.textonavbar} >LISTA </Text>
+   <TouchableOpacity style={css.CustonButton}
+   onPress={()=>setAbrir(true)}
+   >  <Ionicons name="ios-add" size={30} color="#FFF"></Ionicons>
+        
+   </TouchableOpacity>
+
+ </View>
+
+ <ScrollView>
+
+<View style={css.grid}>
+{lista.map(item => (
+     
+     <View style={css.item} key={item.id}>
+        <Text style={css.text} >{item.id} -- {item.nome} </Text>
+       
+         <TouchableOpacity
+           onPress={{}}
+         >
+           <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/trevo.png')} />
+         </TouchableOpacity>
+  
+         <TouchableOpacity >
+           <Image style={{marginLeft:'90%', width: 24, height: 24, fill: '#fff' }} source={require('./src/images/editar.png')} />
+         </TouchableOpacity>
+  
+         <TouchableOpacity >
+           <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/excluir.png')} />
+         </TouchableOpacity>
+         </View>
+  
+        
+  ))}   
+</View>
+
+ </ScrollView>
+ <Modal
+      animationType="slide"
+      transparent={false}
+      visible={abrir}
+      >
+        <SafeAreaView style={css.modal}>
+
+          
+
+          <View style={css.modalHeader}>
+          <TouchableOpacity
+          onPress={ () => setAbrir(false)}
+          >
+          <Ionicons style={{marginLeft:5, marginRight:5}} name="md-arrow-back" size={35} color="#FFF"></Ionicons>
+          </TouchableOpacity>
+        <Text style={css.textoModal}>Inserir Usuário</Text>
+        </View>
+
+        <Animatable.View  
+          animation="bounceInUp"
+        useNativeDriver  >
+
+
+        <TextInput 
+        type="text"
+      style={css.input}
+      placeholder="Insira um Nome"
+      value={nome}
+      onChangeText={ (nome) => setNome(nome)}
+      />
+
+      <TextInput 
+      style={css.input}
+      placeholder="Insira seu Email"
+      value={email}
+      onChangeText={ (email) => setEmail(email)}
+      />
+
+<TextInput 
+      style={css.input}
+      placeholder="Insira sua Senha"
+      value={senha}
+      onChangeText={ (senha) => setSenha(senha)}
+      />
+
+      
+      <TouchableOpacity  
+      style={css.botaoModal}
+      onPress={add}
+      >
+        <Text  style={css.textoBotaoModal}>Salvar</Text>
+      </TouchableOpacity>
+       
+
+        </Animatable.View>
+
+        </SafeAreaView>
+ 
+      </Modal>
+ 
+ </View>
+
+
+)
+}
+export default App;
+ 
+ 
+
+---ADICIONOU NO BD
+
+
+14----API BUSCANDO REGISTRO EM  Mysql (sublime3) NO BD
+
+<?php 
+
+include_once('conexao.php');
+
+$id = $_GET['id'];
+
+$query = $pdo->query("SELECT * from usuarios where id = '$id'");
+
+ $res = $query->fetchAll(PDO::FETCH_ASSOC);
+
+ 	for ($i=0; $i < count($res); $i++) { 
+      foreach ($res[$i] as $key => $value) {
+      }
+ 		
+    $id = $res[$i]['id'];
+    $nome = $res[$i]['nome'];
+    $email = $res[$i]['email'];
+    $senha = $res[$i]['senha'];
+
+
+ 		}
+
+        if(count($res) > 0){
+                $result = json_encode(array('success'=>true, 'id'=>$id, 'nome'=>$nome, 'email'=>$email, 'senha'=>$senha));
+
+            }else{
+                $result = json_encode(array('success'=>false, 'result'=>'0'));
+
+            }
+            echo $result;
+
+ ?>
+
+
+
+15 ------App.js EM BUSCAR REGISTRO E EXIBIR NA MODAL
+
+import { StatusBar } from 'expo-status-bar';
+import React, {  useEffect, useState } from 'react';
+import { 
+  StyleSheet, Text, View, FlatList,
+  SafeAreaView, Button, Image, TouchableOpacity,
+  TextInput, Modal, Alert, ScrollView
+  } from 'react-native';
+import {FaCheckCircle, FaTrash, FaPen } from 'react-icons/fa'; // npm i react-icons
+
+import axios from 'axios';
+import css from './src/Css/css';
+import {} from 'react-dom'
+
+ //import 'bootstrap/dist/css/bootstrap.min.css'
+
+import { ListGroupItemHeading } from 'reactstrap';
+import * as Animatable from 'react-native-animatable';
+import {Ionicons} from '@expo/vector-icons';
+
+
+import trevo from './src/images/trevo.png'
+import editar from './src/images/editar.png'
+import excluir from './src/images/excluir.png'
+
+
+ function App() {
+
+  //CRIAR UM STATE PARA LISTA GERAL
+  const [lista, setLista ] = useState([]);
+  //CRIAR UM STATE PARA USUARIOS que vai ser um nome (string) e não uma lista
+  const [nome, setNome ] = useState('');
+ //CRIAR UM STATE PARA EMAIL que vai ser um email (string) e não uma lista
+ const [email, setEmail ] = useState('');
+ //CRIAR UM STATE PARA SENHA que vai ser um senha (string) e não uma lista
+ const [senha, setSenha ] = useState('');
+ ///CRIAR O STATE ID PARA NO CASO PODER PASSAR  DE EDITAR OU DELETAR
+ const [id, setId ] = useState('');
+ ///CRIAR O STATE PARA ABRIR MODAL
+ const [abrir, setAbrir ] = useState('false');
+ ////CRIARCONSTANTE DE ENDEREÇO 
+ const api = 'http://localhost/apireact/';
+
+
+ //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
+useEffect( ()=> {
+
+  //CRIAR METODO PARA LISTAR
+  listarDados ()
+     
+   }, [])
+  
+ //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
+ async function listarDados (){
+ //  try {
+  /* CRIAR UMA CONSTATNTE CHAMADA res 
+   QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
+ */
+ const res = await axios.get(api + 'listar.php')
+ //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
+ setLista(res.data.result);
+//// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+ console.log(res.data.result)
+//} catch (error) {
+  // Tratar o erro adequadamente
+//}
+ }
+
+ async function add(){
+  const obj = {nome, email, senha};
+  const res = await axios.post(api + 'add.php', obj)
+  listarDados();
+  console.log(res.data.sucess)
+ 
+ }
+ 
+ async function getItem(id){
+  const res = await axios.get(api + 'buscarId.php?id=' + id);
+  setId(res.data.id);
+  setNome(res.data.nome);
+  setEmail(res.data.email);
+  setSenha(res.data.senha);
+  setAbrir(true);
+ 
+}
+
+
+ function limparCampos(){
+  setNome('');
+  setEmail('');
+  setSenha('');
+
+}
+
+return (
+
+  <View>
+  <View style={css.navbar}>
+    <Text style={css.textonavbar} >LISTA </Text>
+   <TouchableOpacity style={css.CustonButton}
+   onPress={()=>setAbrir(true)}
+   >  <Ionicons name="ios-add" size={30} color="#FFF"></Ionicons>
+        
+   </TouchableOpacity>
+
+ </View>
+
+ <ScrollView>
+
+<View style={css.grid}>
+{lista.map(item => (
+     
+     <View style={css.item} key={item.id}>
+        <Text style={css.text} >{item.id} -- {item.nome} </Text>
+       
+      
+  
+         <TouchableOpacity style={css.gridbotaoEditar}
+             onPress={() => getItem(item.id)}>
+           <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/editar.png')} />
+         </TouchableOpacity>
+  
+         <TouchableOpacity style={css.gridbotaoExcluir}
+
+         >
+           <Image style={{width: 24, height: 24, fill: '#fff' }} source={require('./src/images/excluir.png')} />
+         </TouchableOpacity>
+         </View>
+
+        
+  ))}   
+</View>
+
+ </ScrollView>
+ <Modal
+      animationType="slide"
+      transparent={false}
+      visible={abrir}
+      >
+        <SafeAreaView style={css.modal}>
+
+          
+
+          <View style={css.modalHeader}>
+          <TouchableOpacity
+          onPress={ () => setAbrir(false)}
+          >
+          <Ionicons style={{marginLeft:5, marginRight:5}} name="md-arrow-back" size={35} color="#FFF"></Ionicons>
+          </TouchableOpacity>
+        <Text style={css.textoModal}>Inserir Usuário</Text>
+        </View>
+
+        <Animatable.View  
+          animation="bounceInUp"
+        useNativeDriver  >
+
+
+        <TextInput 
+        type="text"
+      style={css.input}
+      placeholder="Insira um Nome"
+      value={nome}
+      onChangeText={ (nome) => setNome(nome)}
+      />
+
+      <TextInput 
+      style={css.input}
+      placeholder="Insira seu Email"
+      value={email}
+      onChangeText={ (email) => setEmail(email)}
+      />
+
+<TextInput 
+      style={css.input}
+      placeholder="Insira sua Senha"
+      value={senha}
+      onChangeText={ (senha) => setSenha(senha)}
+      />
+
+      
+      <TouchableOpacity  
+      style={css.botaoModal}
+      onPress={add}
+      >
+        <Text  style={css.textoBotaoModal}>Salvar</Text>
+      </TouchableOpacity>
+       
+
+        </Animatable.View>
+
+        </SafeAreaView>
+ 
+      </Modal>
+ 
+ </View>
+
+
+)
+}
+export default App;
+ 
+
+
+
+16-------EDITANDO REGISTRO EM App.js  -VAI SER IGUAL AO INSERIR INCLUSIVE USANDO A NESNA MODAL 
+SO MUDA A query e COLOCAMOS UMA CONDIÇÃO NA FUNÇAO add
+ 
+ 
+ --COMEÇA PELA API DE EDITAR EM WAMP64 (editar.php)
+
+<?php 
+
+include_once('conexao.php');
+
+$postjson = json_decode(file_get_contents("php://input"), true);
+
+ $query = $pdo->prepare("UPDATE usuarios SET nome = :nome, email = :email, senha = :senha WHERE id = :id ");
+  
+       $query->bindValue(":nome", $postjson['nome']);
+       $query->bindValue(":email", $postjson['email']);
+       $query->bindValue(":senha", $postjson['senha']);
+       $query->bindValue(":id", $postjson['id']);
+      
+       $query->execute();
+  
+             
+  
+      if($query){
+        $result = json_encode(array('success'=>true));
+  
+        }else{
+        $result = json_encode(array('success'=>false));
+    
+        }
+     echo $result;
+
+
+?>
+
+-----e MUDARMOS A CONDIÇÂO (na function addn em App.js) SE FOR MAIOR QUE ZERO EDITA CASO CONTRARIO INSERE
+import { StatusBar } from 'expo-status-bar';
+import React, {  useEffect, useState } from 'react';
+import { 
+  StyleSheet, Text, View, FlatList,
+  SafeAreaView, Button, Image, TouchableOpacity,
+  TextInput, Modal, Alert, ScrollView
+  } from 'react-native';
+import {FaCheckCircle, FaTrash, FaPen } from 'react-icons/fa'; // npm i react-icons
+
+import axios from 'axios';
+import css from './src/Css/css';
+import {} from 'react-dom'
+
+ //import 'bootstrap/dist/css/bootstrap.min.css'
+
+import { ListGroupItemHeading } from 'reactstrap';
+import * as Animatable from 'react-native-animatable';
+import {Ionicons} from '@expo/vector-icons';
+
+
+import trevo from './src/images/trevo.png'
+import editar from './src/images/editar.png'
+import excluir from './src/images/excluir.png'
+
+
+ function App() {
+
+  //CRIAR UM STATE PARA LISTA GERAL
+  const [lista, setLista ] = useState([]);
+  //CRIAR UM STATE PARA USUARIOS que vai ser um nome (string) e não uma lista
+  const [nome, setNome ] = useState('');
+ //CRIAR UM STATE PARA EMAIL que vai ser um email (string) e não uma lista
+ const [email, setEmail ] = useState('');
+ //CRIAR UM STATE PARA SENHA que vai ser um senha (string) e não uma lista
+ const [senha, setSenha ] = useState('');
+ ///CRIAR O STATE ID PARA NO CASO PODER PASSAR  DE EDITAR OU DELETAR
+ const [id, setId ] = useState('');
+ ///CRIAR O STATE PARA ABRIR MODAL
+ const [abrir, setAbrir ] = useState('false');
+ ////CRIARCONSTANTE DE ENDEREÇO 
+ const api = 'http://localhost/apireact/';
+
+
+ //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
+useEffect( ()=> {
+
+  //CRIAR METODO PARA LISTAR
+  listarDados ()
+     
+   }, [])
+  
+ //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
+ async function listarDados (){
+ //  try {
+  /* CRIAR UMA CONSTATNTE CHAMADA res 
+   QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
+ */
+ const res = await axios.get(api + 'listar.php')
+ //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
+ setLista(res.data.result);
+//// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+ console.log(res.data.result)
+//} catch (error) {
+  // Tratar o erro adequadamente
+//}
+ }
+
+ async function add(){
+  const obj = {nome, email, senha, id};
+  if(id > 0){
+
+const res = await axios.post(api + 'editar.php', obj)
+  }else{
+    const res = await axios.post(api + 'add.php', obj)
+  }
+  
+  listarDados();
+  console.log(res.data.sucess)
+ 
+ }
+
+ 
+ async function getItem(id){
+  const res = await axios.get(api + 'buscarId.php?id=' + id);
+  setId(res.data.id);
+  setNome(res.data.nome);
+  setEmail(res.data.email);
+  setSenha(res.data.senha);
+  setAbrir(true);
+ 
+}
+
+
+ function limparCampos(){
+  setNome('');
+  setEmail('');
+  setSenha('');
+
+}
+
+return (
+
+  <View>
+  <View style={css.navbar}>
+    <Text style={css.textonavbar} >LISTA </Text>
+   <TouchableOpacity style={css.CustonButton}
+   onPress={()=>setAbrir(true)}
+   >  <Ionicons name="ios-add" size={30} color="#FFF"></Ionicons>
+        
+   </TouchableOpacity>
+
+ </View>
+
+ <ScrollView>
+
+<View style={css.grid}>
+{lista.map(item => (
+     
+     <View style={css.item} key={item.id}>
+        <Text style={css.text} >{item.id} -- {item.nome} </Text>
+       
+      
+  
+         <TouchableOpacity style={css.gridbotaoEditar}
+             onPress={() => getItem(item.id)}>
+           <Image style={{ width: 24, height: 24, fill: '#fff' }} source={require('./src/images/editar.png')} />
+         </TouchableOpacity>
+  
+         <TouchableOpacity style={css.gridbotaoExcluir}
+         >
+           <Image style={{width: 24, height: 24, fill: '#fff' }} source={require('./src/images/excluir.png')} />
+         </TouchableOpacity>
+         </View>
+
+        
+  ))}   
+</View>
+
+ </ScrollView>
+ <Modal
+      animationType="slide"
+      transparent={false}
+      visible={abrir}
+      >
+        <SafeAreaView style={css.modal}>
+
+          
+
+          <View style={css.modalHeader}>
+          <TouchableOpacity
+          onPress={ () => setAbrir(false)}
+          >
+          <Ionicons style={{marginLeft:5, marginRight:5}} name="md-arrow-back" size={35} color="#FFF"></Ionicons>
+          </TouchableOpacity>
+        <Text style={css.textoModal}>Inserir Usuário</Text>
+        </View>
+
+        <Animatable.View  
+          animation="bounceInUp"
+        useNativeDriver  >
+
+
+        <TextInput 
+        type="text"
+      style={css.input}
+      placeholder="Insira um Nome"
+      value={nome}
+      onChangeText={ (nome) => setNome(nome)}
+      />
+
+      <TextInput 
+      style={css.input}
+      placeholder="Insira seu Email"
+      value={email}
+      onChangeText={ (email) => setEmail(email)}
+      />
+
+<TextInput 
+      style={css.input}
+      placeholder="Insira sua Senha"
+      value={senha}
+      onChangeText={ (senha) => setSenha(senha)}
+      />
+
+      
+      <TouchableOpacity  
+      style={css.botaoModal}
+      onPress={add}
+      >
+        <Text  style={css.textoBotaoModal}>Salvar</Text>
+      </TouchableOpacity>
+       
+
+        </Animatable.View>
+
+        </SafeAreaView>
+ 
+      </Modal>
+ 
+ </View>
+
+
+)
+}
+export default App;
+ 
+
+----TAVA DANDO UM ERROR AO RETORNO DO res ...MUDEI A function add
+
+async function add(){
+  const obj = {nome, email, senha, id};
+  if(id > 0){
+
+const res = await axios.post(api + 'editar.php', obj)
+listarDados();
+  console.log(res.data.sucess)
+  }else{
+    const res = await axios.post(api + 'add.php', obj)
+    listarDados();
+    console.log(res.data.sucess)
+  }
+ 
+ }
+
+OBSERVAÇÂO : O BOOTSTRAP NAO FUNCIONA BEM NO REACT POR WNQUANTO (mudou o bootstrap para CSS, ja tinhamos feito do
+nosso jeito )
+
+
+-----MUDANDO PARA ADAPTAR O DA AULA ---(mudei prncipalmente o return ate a modal)
+----minha app.js ESTA ASSSIM 
+import { StatusBar } from 'expo-status-bar';
+import React, {  useEffect, useState } from 'react';
+import { 
+  StyleSheet, Text, View, FlatList,
+  SafeAreaView, Button, Image, TouchableOpacity,
+  TextInput, Modal, Alert, ScrollView
+  } from 'react-native';
+import {FaCheckCircle, FaTrash, FaPen } from 'react-icons/fa'; // npm i react-icons
+
+import axios from 'axios';
+import css from './src/Css/css';
+//import {} from 'react-dom'
+
+ //import 'bootstrap/dist/css/bootstrap.min.css'
+
+//import { ListGroupItemHeading } from 'reactstrap';
+import * as Animatable from 'react-native-animatable';
+import {Ionicons} from '@expo/vector-icons';
+
+
+import trevo from './src/images/trevo.png'
+import editar from './src/images/editar.png'
+import excluir from './src/images/excluir.png'
+
+
+ function App() {
+
+  //CRIAR UM STATE PARA LISTA GERAL
+  const [lista, setLista ] = useState([]);
+  //CRIAR UM STATE PARA USUARIOS que vai ser um nome (string) e não uma lista
+  const [nome, setNome ] = useState('');
+ //CRIAR UM STATE PARA EMAIL que vai ser um email (string) e não uma lista
+ const [email, setEmail ] = useState('');
+ //CRIAR UM STATE PARA SENHA que vai ser um senha (string) e não uma lista
+ const [senha, setSenha ] = useState('');
+ ///CRIAR O STATE ID PARA NO CASO PODER PASSAR  DE EDITAR OU DELETAR
+ const [id, setId ] = useState('');
+ ///CRIAR O STATE PARA ABRIR MODAL
+ const [abrir, setAbrir ] = useState('false');
+ ////CRIARCONSTANTE DE ENDEREÇO 
+ const api = 'http://localhost/apireact/';
+
+
+ //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
+useEffect( ()=> {
+
+  //CRIAR METODO PARA LISTAR
+  listarDados ()
+     
+   }, [])
+  
+ //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
+ async function listarDados (){
+ //  try {
+  /* CRIAR UMA CONSTATNTE CHAMADA res 
+   QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
+ */
+ const res = await axios.get(api + 'listar.php')
+ //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
+ setLista(res.data.result);
+//// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+ console.log(res.data.result)
+//} catch (error) {
+  // Tratar o erro adequadamente
+//}
+ }
+
+ async function add(){
+  const obj = {nome, email, senha, id};
+  if(id > 0){
+
+const res = await axios.post(api + 'editar.php', obj)
+listarDados();
+  console.log(res.data.sucess)
+  }else{
+    const res = await axios.post(api + 'add.php', obj)
+    listarDados();
+    console.log(res.data.sucess)
+  }
+  
+  
+ 
+ }
+
+ 
+ async function getItem(id){
+  const res = await axios.get(api + 'buscarId.php?id=' + id);
+  setId(res.data.id);
+  setNome(res.data.nome);
+  setEmail(res.data.email);
+  setSenha(res.data.senha);
+  setAbrir(true);
+ 
+}
+
+
+ function limparCampos(){
+  setNome('');
+  setEmail('');
+  setSenha('');
+
+}
+
+return (
+
+  <View>
+    <View style={css.navbar}>
+
+      <Text style={css.textonavbar}>Lista de Usuários</Text>
+      <TouchableOpacity
+        style={css.botao}
+        onPress={() => setAbrir(true)}
+      >
+        <Ionicons name="ios-add" size={30} color="#FFF"></Ionicons>
+      </TouchableOpacity>
+
+    </View>
+
+ <ScrollView>
+
+ <View style={css.grid}>
+    
+    {lista.map(item => (
+      <View style={css.griditem} key={item.id}><Text style={{color: '#585858'}}>{item.id} - {item.nome}</Text>
+
+      <TouchableOpacity style={css.gridbotaoEditar}
+           onPress={() => getItem(item.id)} >
+             <Ionicons name="ios-create" size={30} color="#50b9e1"></Ionicons>
+      </TouchableOpacity> 
+      
+      <TouchableOpacity style={css.gridbotaoExcluir}
+          onPress={() => mensagemDelete(item.id)} >
+            <Ionicons name="ios-trash" size={30} color="#e15f50"></Ionicons>
+      </TouchableOpacity> 
+     
+                     
+                  
+      </View>
+
+        
+  ))}   
+</View>
+
+ </ScrollView>
+ <Modal
+      animationType="slide"
+      transparent={false}
+      visible={abrir}
+      >
+        <SafeAreaView style={css.modal}>
+
+          
+
+          <View style={css.modalHeader}>
+          <TouchableOpacity
+          onPress={ () => setAbrir(false)}
+          >
+          <Ionicons style={{marginLeft:5, marginRight:5}} name="md-arrow-back" size={35} color="#FFF"></Ionicons>
+          </TouchableOpacity>
+        <Text style={css.textoModal}>Inserir Usuário</Text>
+        </View>
+
+        <Animatable.View  
+          animation="bounceInUp"
+        useNativeDriver  >
+
+
+        <TextInput 
+        type="text"
+      style={css.input}
+      placeholder="Insira um Nome"
+      value={nome}
+      onChangeText={ (nome) => setNome(nome)}
+      />
+
+      <TextInput 
+      style={css.input}
+      placeholder="Insira seu Email"
+      value={email}
+      onChangeText={ (email) => setEmail(email)}
+      />
+
+<TextInput 
+      style={css.input}
+      placeholder="Insira sua Senha"
+      value={senha}
+      onChangeText={ (senha) => setSenha(senha)}
+      />
+
+      
+      <TouchableOpacity  
+      style={css.botaoModal}
+      onPress={add}
+      >
+        <Text  style={css.textoBotaoModal}>Salvar</Text>
+      </TouchableOpacity>
+       
+
+        </Animatable.View>
+
+        </SafeAreaView>
+ 
+      </Modal>
+ 
+ </View>
+
+
+)
+}
+export default App;
+
+
+17----RODANDO NO CELULAR------ AULA 26
