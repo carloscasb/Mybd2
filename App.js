@@ -37,13 +37,49 @@ import excluir from './src/images/excluir.png'
  const [id, setId ] = useState('');
  ///CRIAR O STATE PARA ABRIR MODAL
  const [abrir, setAbrir ] = useState('false');
- ////CRIARCONSTANTE DE ENDEREÇO 
- const api = 'http://localhost/apireact/';
+ //CRIARCONSTANTE DE ENDEREÇO 
+const api = 'http://localhost/apireact/';
+  //const api = 'http://192.168.0.12/apireact/';
+ 
+  function mensagemDelete (id) {
+   
+  
+  
+   // setAbrir(true);
+
+    }
+ 
+  
+
+const mensagemDuplicidade = () =>
+  Alert.alert(
+    "Erro ao Salvar",
+    "Email Já Cadastrado",
+    [
+      
+      { text: "OK", onPress: () => setAbrir(true) }
+    ],
+    { cancelable: true }
+  ); 
+
+
+  const mensagemDadosIncorretos = () =>
+  Alert.alert(
+    "Erro ao Logar",
+    "Dados Incorretos",
+    [
+      
+      { text: "OK", onPress: () => setAbrirLogin(true) }
+    ],
+    { cancelable: true }
+  ); 
+
+
 
 
  //ASSIM QUE FOR CARREGADO A TELA CHAMA A FUNÇÃO listarDados
 useEffect( ()=> {
-
+  setAbrir(false);
   //CRIAR METODO PARA LISTAR
   listarDados ()
      
@@ -75,9 +111,10 @@ listarDados();
   }else{
     const res = await axios.post(api + 'add.php', obj)
     listarDados();
+    
     console.log(res.data.sucess)
   }
-  
+  setAbrir(false);
   
  
  }
@@ -91,6 +128,11 @@ listarDados();
   setSenha(res.data.senha);
   setAbrir(true);
  
+}
+
+async function deleteItem(id){
+  const res = await axios.get(api + 'excluir.php?id=' + id);
+  listarDados();
 }
 
 
@@ -129,7 +171,7 @@ return (
       </TouchableOpacity> 
       
       <TouchableOpacity style={css.gridbotaoExcluir}
-          onPress={() => mensagemDelete(item.id)} >
+         onPress={() => mensagemDelete(item.id)} >
             <Ionicons name="ios-trash" size={30} color="#e15f50"></Ionicons>
       </TouchableOpacity> 
      
