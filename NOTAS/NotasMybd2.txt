@@ -1264,6 +1264,7 @@ nosso jeito )
 
 -----MUDANDO PARA ADAPTAR O DA AULA ---(mudei prncipalmente o return ate a modal)
 ----minha app.js ESTA ASSSIM 
+
 import { StatusBar } from 'expo-status-bar';
 import React, {  useEffect, useState } from 'react';
 import { 
@@ -1475,5 +1476,87 @@ return (
 }
 export default App;
 
+OBS: tambem mudei o fechamento e abertuta da Modal
 
-17----RODANDO NO CELULAR------ AULA 26
+
+
+
+17----RODANDO NO CELULAR------ AULA 27
+Subistituir MEU IP na API ---Identifica IP - cmd-ipconfig - PONHE NA API
+ const api = 'http://192.168.0.12/apireact/';
+
+ RUIM POIS O IPPODE MUDAR TODO INSTANTE , AO NAO SER QUE TENHA DDNS
+ 
+
+18-----TRATANDO INSERÇÃO, DUPICIDADE ETC ------
+
+
+
+19---DELETEAR REGISTRO ---
+FAZ API excluir NO BD (sublime3) - COLOCA UMA CHAMADA DE FUNÇÃO  (function deleteItem) NO LINK LIXEIRA
+
+----API excluir.php em www->apireact
+
+<?php 
+
+include_once('conexao.php');
+
+$id = $_GET['id'];
+
+$query = $pdo->query("DELETE from usuarios where id = '$id'");
+
+ 
+
+        if($query){
+                $result = json_encode(array('success'=>true));
+
+            }else{
+                $result = json_encode(array('success'=>false));
+
+            }
+            echo $result;
+
+ ?>
+
+--- FUNÇÃO DELETAR NO REAX|T App.js
+
+---CHAMADA NO BOTÃO DA mensagem (mensagemDelete)  que por sua vez chama a function deletaritem
+
+--CHAMADA NO BOTÃO DA mensagem (mensagemDelete)
+  <TouchableOpacity style={css.gridbotaoExcluir}
+          onPress={() => mensagemDelete(item.id)} >
+            <Ionicons name="ios-trash" size={30} color="#e15f50"></Ionicons>
+      </TouchableOpacity>
+
+-----FUNÇAO mensagemDelete ACIONAR A FUNÇAO DELETAR
+
+ function mensagemDelete(id){
+    
+  Alert.alert(
+    "Excluir Registro",
+    "Deseja Excluir este Registro?",
+    [
+      {
+        text: "Não",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel"
+      },
+      { text: "Sim", onPress: () => deleteItem(id) }
+    ],
+    { cancelable: true }
+  );
+}
+
+
+---FUNÇÃO DELETAR
+async function deleteItem(id){
+  const res = await axios.get(api + 'excluir.php?id=' + id);
+  listarDados();
+}
+
+
+-----XXXXXXXXXERRO NAO ESTA CHAMANDO O ALERTA
+
+-----A TELA App.js FICA ASSIM
+
+20-----
