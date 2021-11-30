@@ -37,24 +37,46 @@ import excluir from './src/images/excluir.png'
  const [id, setId ] = useState('');
  ///CRIAR O STATE PARA ABRIR MODAL
  const [abrir, setAbrir ] = useState('false');
- //CRIARCONSTANTE DE ENDEREÇO 
-const api = 'http://localhost/apireact/';
-  //const api = 'http://192.168.0.12/apireact/';
- 
-  function mensagemDelete (id) {
-   
-  
-  
-   // setAbrir(true);
+ const [buscar, setBuscar] = useState('');
+ const[abrirLogin, setAbrirLogin] = useState(true);
+ //CRIAR CONSTANTE DE ENDEREÇO 
+// const api = 'http://localhost/apireact/';
+ const api = 'http://192.168.0.12/apireact/';
 
-    }
- 
+  // FUNCIONU COM ESSA ALERT mas precisa de uma botão para cancelar
+   // NO CELULAR FUNCIONA DOS DOIS MODO
+  function mensagemDelete(id){
+    
+   alert(
+      "Excluir Registro",
+      "Deseja Excluir este Registro?",
+     deleteItem(id) 
+   );
+   
+  /* Alert.alert(
+    "Excluir Registro",
+    "Deseja Excluir este Registro?",
+    [
+      {
+        text: "Não",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel"
+      },
+      { text: "Sim", onPress: () => deleteItem(id) }
+    ],
+    { cancelable: true }
+  );
+*/
+  }
   
 
 const mensagemDuplicidade = () =>
-  Alert.alert(
-    "Erro ao Salvar",
+  //Alert.alert(
+
+    alert(
+     "Erro ao Salvar",
     "Email Já Cadastrado",
+   
     [
       
       { text: "OK", onPress: () => setAbrir(true) }
@@ -81,43 +103,56 @@ const mensagemDuplicidade = () =>
 useEffect( ()=> {
   setAbrir(false);
   //CRIAR METODO PARA LISTAR
-  listarDados ()
+  listarDados();
      
    }, [])
   
  //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
  async function listarDados (){
- //  try {
+ // try {
   /* CRIAR UMA CONSTATNTE CHAMADA res 
    QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
  */
  const res = await axios.get(api + 'listar.php')
  //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
  setLista(res.data.result);
-//// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
- console.log(res.data.result)
+// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
+// console.log(res.data.result)
 //} catch (error) {
   // Tratar o erro adequadamente
 //}
  }
 
+ function buscarDados(){
+  listarDados();
+}
+
  async function add(){
   const obj = {nome, email, senha, id};
-  if(id > 0){
-
-const res = await axios.post(api + 'editar.php', obj)
-listarDados();
-  console.log(res.data.sucess)
-  }else{
-    const res = await axios.post(api + 'add.php', obj)
-    listarDados();
     
-    console.log(res.data.sucess)
-  }
-  setAbrir(false);
-  
+    if(id > 0){
+     const res = await axios.post(api + 'editar.php', obj);
+      if(res.data.success === true){
+          limparCampos();
+      }
+    }else{
+     const res = await axios.post(api + 'add.php', obj);
+     
+      if(res.data.success === true){
+         limparCampos();
+        
+      }
+
+      if(res.data.success === 'Email já Cadastrado!'){
+        mensagemDuplicidade();
+        limparCampos();
+      }
  
- }
+    }
+    listarDados();
+    setAbrir(false);
+     
+     }
 
  
  async function getItem(id){
@@ -140,6 +175,7 @@ async function deleteItem(id){
   setNome('');
   setEmail('');
   setSenha('');
+  setId('0');
 
 }
 
@@ -158,6 +194,19 @@ return (
 
     </View>
 
+    <View style={css.ViewinputBuscar}>
+    <TextInput 
+      style={css.inputBuscar}
+      placeholder="Buscar pelo Nome"
+      value={buscar}
+      onChangeText={ (buscar) => setBuscar(buscar)}
+      onChange={buscarDados()}
+      />
+      
+     <Ionicons style={css.iconeBuscar} name="ios-search" size={25} color="#4b4a49"></Ionicons>
+     
+    </View>
+
  <ScrollView>
 
  <View style={css.grid}>
@@ -174,16 +223,15 @@ return (
          onPress={() => mensagemDelete(item.id)} >
             <Ionicons name="ios-trash" size={30} color="#e15f50"></Ionicons>
       </TouchableOpacity> 
-     
-                     
-                  
+                      
       </View>
-
-        
+       
   ))}   
+
 </View>
 
  </ScrollView>
+ 
  <Modal
       animationType="slide"
       transparent={false}
@@ -243,10 +291,11 @@ return (
         </SafeAreaView>
  
       </Modal>
- 
+    
+     
  </View>
 
-
+ 
 )
 }
 export default App;
