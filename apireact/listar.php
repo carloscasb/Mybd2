@@ -1,49 +1,44 @@
 
-<?php
+<?php 
 
-//INCLUIR CONECÃO
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Request-With');
+header('Content-Type: application/json; charset=utf-8');
+
+
+
 include_once('conexao.php');
 
-//FAZER A CONSULTA
+$busca = '%' .$_GET['busca']. '%';
 
-// $query= $pdo->query("SELECT * from usuarios order by id desc limit $postjson[start], $postjson[limit] ");
+$query = $pdo->query("SELECT * from usuarios where nome LIKE '$busca'");
 
-$query= $pdo->query("SELECT * from usuarios order by id desc  ");
+ $res = $query->fetchAll(PDO::FETCH_ASSOC);
 
+    for ($i=0; $i < count($res); $i++) { 
+      foreach ($res[$i] as $key => $value) {
+      }
+        $dados[] = array(
+            'id' => $res[$i]['id'],
+            'nome' => $res[$i]['nome'],
+            'email' => $res[$i]['email'],
+            'senha' => $res[$i]['senha'],
+           
+            
+        
+        );
 
- // PASSAR OS DADOS RECEBIDOS NA CONSULTA PARA UMA ARRAY
+        }
 
- $res = $query->fetchALL(PDO::FETCH_ASSOC);
+        if(count($res) > 0){
+                $result = json_encode(array('success'=>true, 'result'=>$dados));
 
- for ($i=0; $i < count($res); $i++) {
- 	foreach ($res[$i] as $key => $value) {
- 		// code...
- 	}
+            }else{
+                $result = json_encode(array('success'=>false, 'result'=>'0'));
 
+            }
+            echo $result;
 
-// ESSE DADOS VAI SER REPASSADOS PARA A APLICAÇÃO
- 	$dados[] = array (
-
- 		'id' => $res[$i]['id'],
- 		'nome' => $res[$i]['nome'],
- 		'email' => $res[$i]['email'],
- 		'senha' => $res[$i]['senha'],
- 	
- 	);
- }
-
- //CRIAR CONDIÇÃO SE ENCONTRA ALGUM REGISTRO (maior que 0) PASSA OS DADOS ($dados) AO CONTRARIO PASSA ZERO (0)
-
- if (count($res) > 0 ){
-
- 	$result = json_encode(array('sucess' => true, 'result'=> $dados));
- }else{
- 	$result = json_encode(array('sucess' => false, 'result'=> 0));
-
- }
-
- echo $result;
-
- 
-
-?>
+ ?>
