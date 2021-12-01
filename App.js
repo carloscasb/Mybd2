@@ -107,26 +107,17 @@ useEffect( ()=> {
      
    }, [])
   
- //VAMOS FAZER A FUNÇÃO listarDados, COMO VAI CHAMAR UMA API ela tem que ser ASYNC
- async function listarDados (){
- // try {
-  /* CRIAR UMA CONSTATNTE CHAMADA res 
-   QUE VAI PEGAR RESULTADO LA NA API (QUE ESTA NO SERVIDOR LOCAL)
- */
- const res = await axios.get(api + 'listar.php')
- //Depois que veio o resultado passa os dados para o setLista (nesse caso passa o resultode 2 paramentro, suceeso e reesult)
- setLista(res.data.result);
-// //Vamos exibir no console.log para testar e pq  Ainda não temos TELA para MOSTRAR
-// console.log(res.data.result)
-//} catch (error) {
-  // Tratar o erro adequadamente
-//}
- }
+   async function listarDados(){
+    const res = await axios.get(api + 'listar.php?busca=' + buscar);
+    setLista(res.data.result);
+    //console.log(res.data.result);
+    
+  }
 
- function buscarDados(){
-  listarDados();
-}
-
+  function buscarDados(){
+    listarDados();
+  }
+  
  async function add(){
   const obj = {nome, email, senha, id};
     
