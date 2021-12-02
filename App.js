@@ -86,7 +86,9 @@ const mensagemDuplicidade = () =>
 
 
   const mensagemDadosIncorretos = () =>
-  Alert.alert(
+ //Alert.alert(
+
+  alert(
     "Erro ao Logar",
     "Dados Incorretos",
     [
@@ -140,12 +142,23 @@ useEffect( ()=> {
       }
  
     }
+
     listarDados();
     setAbrir(false);
      
      }
 
- 
+  async function login(){
+    const obj = {email, senha};
+    const res = await axios.post(api + 'login.php', obj);
+    if(res.data.success === 'Dados Incorretos!'){
+      mensagemDadosIncorretos();
+      
+    }else{
+      setAbrirLogin(false);
+    }
+  }
+  
  async function getItem(id){
   const res = await axios.get(api + 'buscarId.php?id=' + id);
   setId(res.data.id);
@@ -282,7 +295,53 @@ return (
         </SafeAreaView>
  
       </Modal>
-    
+     
+
+      <Modal    // MODAL LOGIN
+      animationType="slide"
+      transparent={false}
+      visible={abrirLogin}
+      >
+       <SafeAreaView style={css.modal}>
+
+          
+
+<View style={css.modalHeader}>
+
+<Text style={css.textoModal}>Faça seu Login</Text>
+</View>
+
+<Animatable.View  
+animation="bounceInUp"
+useNativeDriver  >
+
+
+<TextInput 
+type="email"
+style={css.input}
+placeholder="Insira seu Email"
+value={email}
+onChangeText={ (email) => setEmail(email)}
+/>
+
+<TextInput 
+secureTextEntry={true}
+style={css.input}
+placeholder="Insira sua Senha"
+value={senha}
+onChangeText={ (senha) => setSenha(senha)}
+/>
+
+<TouchableOpacity  
+      style={css.botaoModal}
+      onPress={login}
+      >
+        <Text  style={css.textoBotaoModal}>Login</Text>
+      </TouchableOpacity>
+
+</Animatable.View>
+</SafeAreaView>
+      </Modal>
      
  </View>
 
